@@ -2,7 +2,7 @@
 
 git submodule init && git submodule update
 
-brew install sdl2
+brew install sdl3
 
 ./waf configure -T debug --disable-warns $* &&
 ./waf build

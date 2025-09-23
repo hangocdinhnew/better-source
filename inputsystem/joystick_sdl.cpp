@@ -185,7 +185,7 @@ void CInputSystem::InitializeJoysticks( void )
 		SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG, controllerConfig);
 	}
 
-	if ( SDL_InitSubSystem( SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC ) == -1 )
+	if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC))
 	{
 		Warning("Joystick init failed -- SDL_Init(SDL_INIT_GAMECONTROLLER|SDL_INIT_HAPTIC) failed: %s.\n", SDL_GetError());
 		return;
@@ -201,7 +201,7 @@ void CInputSystem::InitializeJoysticks( void )
 		if ( SDL_IsGameController(i) )
 		{
 			JoystickHotplugAdded(i);
-		} 
+		}
 		else
 		{
 			SDL_JoystickGUID joyGUID = SDL_JoystickGetDeviceGUID(i);
