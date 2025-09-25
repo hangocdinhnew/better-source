@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: An application framework
+// Purpose: An application framework  
 //
 //=============================================================================//
 
@@ -79,7 +79,7 @@ t_eglQueryString _eglQueryString;
 
 /*
 From Ryan Gordon:
-
+ 
 SDL's FULLSCREEN_DESKTOP mode on the mac now
 puts the game in its own fullscreen Space on OS X 10.7 and later, as of
 SDL 2.0.3, I think.
@@ -115,7 +115,7 @@ Vsync, we found that a Fullscreen Space got a slightly faster framerate,
 too (plus it's how Apple "wants" you to do fullscreen at this point, etc).
 
 And of course, this is Mac-specific: this is in the Cocoa backend, and
-thus doesn't affect Windows or Linux, etc.
+thus doesn't affect Windows or Linux, etc. 
 */
 
 static void DebugPrintf( const char *pMsg, ... )
@@ -138,7 +138,7 @@ class LinuxAppFuncLogger
 		{
 			printf( ">%s\n", m_funcName );
 		};
-
+		
 		LinuxAppFuncLogger( const char *funcName, char *fmt, ... )
 		{
 			m_funcName = funcName;
@@ -148,12 +148,12 @@ class LinuxAppFuncLogger
 			vprintf( fmt, vargs );
 			va_end( vargs );
 		}
-
+		
 		~LinuxAppFuncLogger( )
 		{
 			printf( "<%s\n", m_funcName );
 		};
-
+	
 		const char *m_funcName;
 };
 #define	SDLAPP_FUNC			LinuxAppFuncLogger _logger_( __FUNCTION__ )
@@ -172,8 +172,8 @@ void	CheckGLError( int line )
 	//char errbuf[1024];
 
 	//borrowed from GLMCheckError.. slightly different
-
-
+	
+	
 	GLenum errorcode = (GLenum)gGL->glGetError();
 	//GLenum errorcode2 = 0;
 	if ( errorcode != GL_NO_ERROR )
@@ -256,15 +256,15 @@ public:
 public:
 	virtual bool Connect( CreateInterfaceFn factory );
 	virtual void Disconnect();
-
+	
 	virtual void *QueryInterface( const char *pInterfaceName );
-
+	
 	// Init, shutdown
 	virtual InitReturnVal_t Init();
 	virtual void Shutdown();
 
 	virtual bool CreateGameWindow( const char *pTitle, bool bWindowed, int width, int height );
-
+	
 	virtual void IncWindowRefCount();
 	virtual void DecWindowRefCount();
 
@@ -276,7 +276,7 @@ public:
 
 	// Set the mouse cursor position.
 	virtual void SetCursorPosition( int x, int y );
-
+	
 	virtual void *GetWindowRef() { return (void *)m_Window; }
 
 	virtual void SetWindowFullScreen( bool bFullScreen, int nWidth, int nHeight );
@@ -284,10 +284,10 @@ public:
 	virtual void MoveWindow( int x, int y );
 	virtual void SizeWindow( int width, int tall );
 	virtual void PumpWindowsMessageLoop();
-
+		
 	virtual void DestroyGameWindow();
 	virtual void SetApplicationIcon( const char *pchAppIconFile );
-
+	
 	virtual void GetMouseDelta( int &x, int &y, bool bIgnoreNextMouseDelta = false );
 
 	virtual void GetNativeDisplayInfo( int nDisplay, uint &nWidth, uint &nHeight, uint &nRefreshHz ); // Retrieve the size of the monitor (desktop)
@@ -326,13 +326,13 @@ public:
 	virtual void OnFrameRendered();
 
 	virtual void SetGammaRamp( const uint16 *pRed, const uint16 *pGreen, const uint16 *pBlue );
-
+			
 	virtual double GetPrevGLSwapWindowTime() { return m_flPrevGLSwapWindowTime; }
 
 	// Called to create a game window that will be hidden, designed for
 	// getting an OpenGL context going so we can begin initializing things.
 	bool CreateHiddenGameWindow( const char *pTitle, int width, int height );
-
+					
 private:
 	void handleKeyInput( const SDL_Event &event );
 
@@ -515,7 +515,7 @@ InitReturnVal_t CSDLMgr::Init()
 
 	if (!SDL_WasInit(SDL_INIT_VIDEO))
 	{
-		if (SDL_Init(SDL_INIT_VIDEO))
+		if (SDL_Init(SDL_INIT_VIDEO) == -1)
 			Error( "SDL_Init(SDL_INIT_VIDEO) failed: %s", SDL_GetError() );
 
 #if defined( DX_TO_GL_ABSTRACTION )
@@ -962,7 +962,7 @@ void CSDLMgr::DeleteContext( PseudoGLContextPtr hContext )
 {
 	SDLAPP_FUNC;
 	Assert( (SDL_GLContext)hContext != m_GLContext );
-
+	
 	// Don't delete the main one.
 	if ( (SDL_GLContext)hContext != m_GLContext )
 	{
@@ -1186,7 +1186,7 @@ void CSDLMgr::OnFrameRendered()
 void CSDLMgr::ShowPixels( CShowPixelsParams *params )
 {
 	SDLAPP_FUNC;
-
+	
 	tmZone( TELEMETRY_LEVEL0, TMZF_NONE, __FUNCTION__ );
 
 	if (params->m_onlySyncView)
@@ -1199,7 +1199,7 @@ void CSDLMgr::ShowPixels( CShowPixelsParams *params )
 	{
 		// just jam through these debug convars every frame
 		// but they will be shock absorbed below
-
+			
 		swapInterval	= gl_swapinterval.GetInt();
 		swapLimit		= gl_swaplimit.GetInt();
 	}
@@ -1224,15 +1224,15 @@ void CSDLMgr::ShowPixels( CShowPixelsParams *params )
 		}
 #endif
 	}
-
+		
 	// only touch them on changes, or right after a change in windowed/FS state
 	if ( (swapInterval!=m_lastKnownSwapInterval) || (swapLimit!=m_lastKnownSwapLimit) )
 	{
-
+		
 		if (swapInterval!=m_lastKnownSwapInterval)
 		{
 			// This code hits when we turn on vsync, if we're going to swap tear.
-			// We want to do one frame of real vsync to get the engine to sync at the top
+			// We want to do one frame of real vsync to get the engine to sync at the top 
 			// of the frame refresh.
 			if (swapInterval < 0 && (m_lastKnownSwapInterval == 0 || m_lastKnownSwapInterval == kBogusSwapInterval))  {
 				swapInterval = -swapInterval;
@@ -1733,7 +1733,7 @@ void CSDLMgr::handleKeyInput( const SDL_Event &event )
 			case '.':
 				theEvent.m_UnicodeKeyUnmodified = '>';
 				break;
-		}
+		}		
 	}
 #endif
 
@@ -2028,7 +2028,7 @@ void CSDLMgr::DecWindowRefCount()
 #endif
 		}
 		m_readFBO = 0;
-
+								
 		SDL_GL_DeleteContext( m_GLContext );
 #if !defined( OSX ) && defined( DBGFLAG_ASSERT )
 		// Clear the GL entrypoint pointers, ensuring we crash if someone tries to call GL after we delete the context.
@@ -2129,7 +2129,7 @@ void CSDLMgr::RenderedSize( uint &width, uint &height, bool set )
 	}
 }
 
-void CSDLMgr::DisplayedSize( uint &width, uint &height )
+void CSDLMgr::DisplayedSize( uint &width, uint &height ) 
 {
 	SDLAPP_FUNC;
 
@@ -2158,7 +2158,7 @@ void CSDLMgr::SetGammaRamp( const uint16 *pRed, const uint16 *pGreen, const uint
 	if ( m_Window )
 	{
 		int nResult = SDL_SetWindowGammaRamp( m_Window, pRed, pGreen, pBlue );
-
+		
 		if ( nResult != 0 )
 		{
 			ConMsg( "SDL_SetWindowGammaRamp failed: %d\n", nResult );
@@ -2251,3 +2251,4 @@ GLMDisplayDB *CSDLMgr::GetDisplayDB( void )
 #endif // DX_TO_GL_ABSTRACTION
 
 #endif  // !DEDICATED
+

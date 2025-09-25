@@ -15,7 +15,7 @@ let
     ];
 
     runtimeDeps = with pkgs; [
-        sdl3
+        SDL2
         freetype
         fontconfig
         openal
