@@ -554,12 +554,12 @@ void CVideoMode_Common::ResetCurrentModeForNewResolution( int nWidth, int nHeigh
 			m_nVROverrideY = vrBounds.nY;
 #elif defined( USE_SDL )
 			int displayCount = 0;
-			SDL_GetDisplays(&displayCount);
+			SDL_DisplayID* displays = SDL_GetDisplays(&displayCount);
 
 			for ( int i = 0; i < displayCount; i++ )
 			{
 				SDL_Rect sdlRect;
-				SDL_GetDisplayBounds( i, &sdlRect );
+				SDL_GetDisplayBounds( displays[i], &sdlRect );
 
 				if( sdlRect.x == vrBounds.nX && sdlRect.y == vrBounds.nY
 					&& sdlRect.w == vrBounds.nWidth && sdlRect.h == vrBounds.nHeight )
@@ -569,6 +569,8 @@ void CVideoMode_Common::ResetCurrentModeForNewResolution( int nWidth, int nHeigh
 					break;
 				}
 			}
+
+			SDL_free(displays);
 #endif
 		}
 	}
@@ -1590,13 +1592,15 @@ void CVideoMode_Common::CenterEngineWindow( void *hWndCenter, int width, int hei
 	}
 
 	SDL_Rect rect = { 0, 0, 0, 0 };
-	SDL_GetDisplayBounds( displayindex, &rect );
+	SDL_GetDisplayBounds( displayID, &rect );
 
 	CenterX += rect.x;
 	CenterY += rect.y;
 
 	game->SetWindowXY( CenterX, CenterY );
 	g_pLauncherMgr->MoveWindow( CenterX, CenterY );
+
+	SDL_free(displays);
 #else
    if ( IsPC() )
     {
@@ -1644,8 +1648,6 @@ void CVideoMode_Common::CenterEngineWindow( void *hWndCenter, int width, int hei
     SetWindowPos ( (HWND)hWndCenter, NULL, CenterX, CenterY, 0, 0,
                   SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW | SWP_DRAWFRAME);
 #endif
-
-    SDL_free(displays);
 }
 
 

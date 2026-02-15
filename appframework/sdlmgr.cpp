@@ -438,7 +438,7 @@ ConVar sdl_displayindex( "sdl_displayindex", "0", FCVAR_HIDDEN, "SDL fullscreen 
 static void sdl_displayindex_changed( IConVar *pConVar, const char *pOldString, float flOldValue )
 {
 	int NumVideoDisplays = 0;
-	SDL_GetDisplays(&NumVideoDisplays);
+	SDL_DisplayID* displays = SDL_GetDisplays(&NumVideoDisplays);
 
 	if ( ( sdl_displayindex.GetInt() < 0 ) || ( sdl_displayindex.GetInt() >= NumVideoDisplays ) )
 	{
@@ -446,6 +446,8 @@ static void sdl_displayindex_changed( IConVar *pConVar, const char *pOldString, 
 	}
 
 	g_bSDLDisplayindexSet = true;
+
+	SDL_free(displays);
 }
 
 
@@ -458,13 +460,13 @@ static int GetLargestDisplaySize( int& Width, int& Height )
 	Height = 480;
 
 	int n = 0;
-	SDL_GetDisplays(&n);
+	SDL_DisplayID* displays = SDL_GetDisplays(&n);
 
 	for ( int i = 0; i < n; i++ )
 	{
 		SDL_Rect rect = { 0, 0, 0, 0 };
 
-		SDL_GetDisplayBounds( i, &rect );
+		SDL_GetDisplayBounds( displays[i], &rect );
 
 		if ( ( rect.w > Width ) || ( ( rect.w == Width ) && ( rect.h > Height ) ) )
 		{
@@ -474,6 +476,8 @@ static int GetLargestDisplaySize( int& Width, int& Height )
 			nDisplay = i;
 		}
 	}
+
+	SDL_free(displays);
 
 	return nDisplay;
 }
@@ -1475,9 +1479,8 @@ void CSDLMgr::SetWindowFullScreen( bool bFullScreen, int nWidth, int nHeight )
 {
 	SDLAPP_FUNC;
 
-	SDL_DisplayID *displays = nullptr;
 	int numDisplays;
-	displays = SDL_GetDisplays(&numDisplays);
+	SDL_DisplayID *displays = SDL_GetDisplays(&numDisplays);
 
 	if (numDisplays <= 0 || !displays)
 		{
@@ -2148,7 +2151,7 @@ void CSDLMgr::GetNativeDisplayInfo( int nDisplay, uint &nWidth, uint &nHeight, u
 	if ( !mode )
 	{
 		Assert( 0 );
-		Error("Couldn't find a valid display!");
+		Error("Couldn't find a valid display!\n");
 	}
 
 	nRefreshHz = mode->refresh_rate;

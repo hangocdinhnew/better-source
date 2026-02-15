@@ -1601,14 +1601,14 @@ void CGame::GetDesktopInfo( int &width, int &height, int &refreshrate )
 	refreshrate = 0;
 
 	int count = 0;
-	SDL_GetDisplays(&count);
+	SDL_DisplayID* displays = SDL_GetDisplays(&count);
 
 	// Go through all the displays and return the size of the largest.
 	for( int i = 0; i < count; i++ )
 	{
 		SDL_Rect rect;
 
-		if ( !SDL_GetDisplayBounds( i, &rect ) )
+		if ( !SDL_GetDisplayBounds( displays[i], &rect ) )
 		{
 			if ( ( rect.w > width ) || ( ( rect.w == width ) && ( rect.h > height ) ) )
 			{
@@ -1617,6 +1617,8 @@ void CGame::GetDesktopInfo( int &width, int &height, int &refreshrate )
 			}
 		}
 	}
+
+	SDL_free(displays);
 #else
 	// order of initialization means that this might get called early.  In that case go ahead and grab the current
 	// screen window and setup based on that.
@@ -1643,14 +1645,19 @@ void CGame::UpdateDesktopInformation( )
 	static ConVarRef sdl_displayindex( "sdl_displayindex" );
 	int displayIndex = sdl_displayindex.IsValid() ? sdl_displayindex.GetInt() : 0;
 
+	int count = 0;
+	SDL_DisplayID* displays = SDL_GetDisplays(&count);
+
 	const SDL_DisplayMode* mode = nullptr;
-	mode = SDL_GetDesktopDisplayMode( displayIndex );
+	mode = SDL_GetDesktopDisplayMode( displays[displayIndex] );
 
 	if (mode) {
 		m_iDesktopWidth = mode->w;
 		m_iDesktopHeight = mode->h;
 		m_iDesktopRefreshRate = mode->refresh_rate;
 	}
+
+	SDL_free(displays);
 #else
 	HDC dc = ::GetDC( m_hWindow );
 	m_iDesktopWidth = ::GetDeviceCaps(dc, HORZRES);

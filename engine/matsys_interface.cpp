@@ -429,9 +429,12 @@ static void ReadMaterialSystemConfigFromRegistry( MaterialSystem_Config_t &confi
 		conVar.SetValue( displayIndex );
 		displayIndex = conVar.GetInt();
 
+		int numDisplays;
+		SDL_DisplayID *displays = SDL_GetDisplays(&numDisplays);
+
 		// Make sure the width / height isn't too large for this display.
 		SDL_Rect rect;
-		if ( !SDL_GetDisplayBounds( displayIndex, &rect ) )
+		if ( !SDL_GetDisplayBounds( displays[displayIndex], &rect ) )
 		{
 			if ( ( config.m_VideoMode.m_Width > rect.w ) || ( config.m_VideoMode.m_Height > rect.h ) )
 			{
@@ -439,6 +442,8 @@ static void ReadMaterialSystemConfigFromRegistry( MaterialSystem_Config_t &confi
 				config.m_VideoMode.m_Height = rect.h;
 			}
 		}
+
+		SDL_free(displays);
 	}
 #endif // USE_SDL && !SWDS
 
@@ -637,9 +642,12 @@ static void OverrideMaterialSystemConfigFromCommandLine( MaterialSystem_Config_t
 			conVar.SetValue( displayIndex );
 			displayIndex = conVar.GetInt();
 
+			int numDisplays;
+			SDL_DisplayID *displays = SDL_GetDisplays(&numDisplays);
+
 			// Make sure the width / height isn't too large for this display.
 			SDL_Rect rect;
-			if ( !SDL_GetDisplayBounds( displayIndex, &rect ) )
+			if ( !SDL_GetDisplayBounds( displays[displayIndex], &rect ) )
 			{
 				if ( ( config.m_VideoMode.m_Width > rect.w ) || ( config.m_VideoMode.m_Height > rect.h ) )
 				{
@@ -647,6 +655,8 @@ static void OverrideMaterialSystemConfigFromCommandLine( MaterialSystem_Config_t
 					config.m_VideoMode.m_Height = rect.h;
 				}
 			}
+
+			SDL_free(displays);
 		}
 	}
 #endif // USE_SDL && !SWDS

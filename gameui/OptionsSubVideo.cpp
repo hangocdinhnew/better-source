@@ -1209,11 +1209,16 @@ void COptionsSubVideo::PrepareResolutionList()
 		int displayIndex = materials->GetCurrentAdapter();
 #endif
 
-		if ( !SDL_GetDisplayBounds( displayIndex, &rect ) )
+		int numofdisplay = 0;
+		SDL_DisplayID* displays = SDL_GetDisplays(&numofdisplay);
+
+		if ( !SDL_GetDisplayBounds( displays[displayIndex], &rect ) )
 		{
 			desktopWidth = rect.w;
 			desktopHeight = rect.h;
 		}
+
+		SDL_free(displays);
 	}
 
 	// If we are switching to fullscreen, and this isn't the mode we're currently in, then
@@ -1464,15 +1469,20 @@ void COptionsSubVideo::SetCurrentResolutionComboItem()
 		int displayIndex = materials->GetCurrentAdapter();
 #endif
 
-		if ( !SDL_GetDisplayBounds( displayIndex, &rect ) )
+		int numofdisplay = 0;
+		SDL_DisplayID* displays = SDL_GetDisplays(&numofdisplay);
+
+		if ( !SDL_GetDisplayBounds( displays[displayIndex], &rect ) )
 		{
 			desktopWidth = rect.w;
 			desktopHeight = rect.h;
 		}
+
+		SDL_free(displays);
 #endif
 
 		GetResolutionName( plist, sz, sizeof(sz), desktopWidth, desktopHeight );
-        m_pMode->SetText(sz);
+		m_pMode->SetText(sz);
 	}
 }
 
@@ -1568,7 +1578,10 @@ void COptionsSubVideo::OnApplyChanges()
 			}
 		}
 
-		if ( !SDL_GetDisplayBounds( displayIndexTarget, &rect ) )
+		int numofdisplay = 0;
+		SDL_DisplayID* displays = SDL_GetDisplays(&numofdisplay);
+
+		if ( !SDL_GetDisplayBounds( displays[displayIndexTarget], &rect ) )
 		{
 			// If we are going non-native fullscreen, tweak the resolution to have the same aspect ratio as the display.
 			if ( ( width != rect.w ) || ( height != rect.h ) )
@@ -1578,6 +1591,8 @@ void COptionsSubVideo::OnApplyChanges()
 				bConfigChanged = true;
 			}
 		}
+
+		SDL_free(displays);
 	}
 #endif // USE_SDL
 
