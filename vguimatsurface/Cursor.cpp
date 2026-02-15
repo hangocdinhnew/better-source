@@ -14,7 +14,7 @@
 
 #if defined( USE_SDL )
 #undef M_PI
-#include "SDL.h"
+#include "SDL3/SDL.h"
 #endif
 
 #include "tier0/dbg.h"
@@ -29,7 +29,7 @@
 #include "xbox/xbox_win32stubs.h"
 #endif
 
-#if defined( USE_SDL ) 
+#if defined( USE_SDL )
 #include "materialsystem/imaterialsystem.h"
 #endif
 
@@ -47,7 +47,7 @@ static SDL_Cursor *s_hCurrentlySetCursor = NULL;
 static HICON s_pDefaultCursor[ dc_last ];
 static HICON s_hCurrentCursor = NULL;
 #endif
-static bool s_bCursorLocked = false; 
+static bool s_bCursorLocked = false;
 static bool s_bCursorVisible = true;
 static int s_nForceCursorVisibleCount = 0;
 static bool s_bSoftwareCursorActive = false;
@@ -69,18 +69,18 @@ void InitCursors()
 #if defined( USE_SDL )
 
 	s_pDefaultCursor[ dc_none ]     = NULL;
-	s_pDefaultCursor[ dc_arrow ]    = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_ARROW );
-	s_pDefaultCursor[ dc_ibeam ]    = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_IBEAM );
+	s_pDefaultCursor[ dc_arrow ]    = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_DEFAULT );
+	s_pDefaultCursor[ dc_ibeam ]    = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_TEXT );
 	s_pDefaultCursor[ dc_hourglass ]= SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_WAIT );
 	s_pDefaultCursor[ dc_crosshair ]= SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_CROSSHAIR );
-	s_pDefaultCursor[ dc_waitarrow ]= SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_WAITARROW );
-	s_pDefaultCursor[ dc_sizenwse ] = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_SIZENWSE );
-	s_pDefaultCursor[ dc_sizenesw ] = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_SIZENESW );
-	s_pDefaultCursor[ dc_sizewe ]   = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_SIZEWE );
-	s_pDefaultCursor[ dc_sizens ]   = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_SIZENS );
-	s_pDefaultCursor[ dc_sizeall ]  = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_SIZEALL );
-	s_pDefaultCursor[ dc_no ]       = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_NO );
-	s_pDefaultCursor[ dc_hand ]     = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_HAND );
+	s_pDefaultCursor[ dc_waitarrow ]= SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_PROGRESS );
+	s_pDefaultCursor[ dc_sizenwse ] = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_NWSE_RESIZE );
+	s_pDefaultCursor[ dc_sizenesw ] = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_NESW_RESIZE );
+	s_pDefaultCursor[ dc_sizewe ]   = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_EW_RESIZE );
+	s_pDefaultCursor[ dc_sizens ]   = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_NS_RESIZE );
+	s_pDefaultCursor[ dc_sizeall ]  = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_MOVE );
+	s_pDefaultCursor[ dc_no ]       = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_NOT_ALLOWED );
+	s_pDefaultCursor[ dc_hand ]     = SDL_CreateSystemCursor( SDL_SYSTEM_CURSOR_POINTER );
 
 	s_hCurrentCursor = s_pDefaultCursor[ dc_arrow ];
 
@@ -142,7 +142,7 @@ vgui::HCursor CUserCursorManager::CreateCursorFromFile( char const *curOrAniFile
 	Q_strncpy( fn, curOrAniFile, sizeof( fn ) );
 	Q_strlower( fn );
 	Q_FixSlashes( fn );
-	
+
 	int cursorIndex = m_UserCursors.Find( fn );
 	if ( cursorIndex != m_UserCursors.InvalidIndex() )
 	{
@@ -153,7 +153,7 @@ vgui::HCursor CUserCursorManager::CreateCursorFromFile( char const *curOrAniFile
 
 	char fullpath[ 512 ];
 	g_pFullFileSystem->RelativePathToFullPath( fn, pPathID, fullpath, sizeof( fullpath ) );
-	
+
 	HCURSOR newCursor = (HCURSOR)LoadCursorFromFile( fullpath );
 	cursorIndex = m_UserCursors.Insert( fn, newCursor );
 	return cursorIndex | USER_CURSOR_MASK;
@@ -183,7 +183,7 @@ static CUserCursorManager g_UserCursors;
 
 vgui::HCursor Cursor_CreateCursorFromFile( char const *curOrAniFile, char const *pPathID )
 {
-#ifdef WIN32 
+#ifdef WIN32
 	return g_UserCursors.CreateCursorFromFile( curOrAniFile, pPathID );
 #else
 	return dc_user;
@@ -193,7 +193,7 @@ vgui::HCursor Cursor_CreateCursorFromFile( char const *curOrAniFile, char const 
 
 void Cursor_ClearUserCursors()
 {
-#ifdef WIN32 
+#ifdef WIN32
 	g_UserCursors.Shutdown();
 #endif
 }
@@ -489,7 +489,11 @@ void CursorGetPos(void *hwnd, int &x, int &y)
 #if defined ( USE_SDL ) && !defined( PLATFORM_WINDOWS )
 	if ( s_bCursorVisible )
 	{
-		SDL_GetMouseState( &x, &y );
+		float cx, cy;
+		SDL_GetMouseState(&cx, &cy);
+
+		x = static_cast<int>(cx);
+		y = static_cast<int>(cy);
 
 		int windowHeight = 0;
 		int windowWidth = 0;
@@ -499,16 +503,16 @@ void CursorGetPos(void *hwnd, int &x, int &y)
 		CMatRenderContextPtr pRenderContext( g_pMaterialSystem );
 		int rx, ry, width, height;
 		pRenderContext->GetViewport( rx, ry, width, height );
-	
+
 		if ( !s_bSoftwareCursorActive && (width != windowWidth || height != windowHeight )  )
 		{
-			// scale the x/y back into the co-ords of the back buffer, not the scaled up window 
+			// scale the x/y back into the co-ords of the back buffer, not the scaled up window
 			//DevMsg( "Mouse x:%d y:%d %d %d %d %d\n", x, y, width, windowWidth, height, abs( height - windowHeight ) );
 			x = x * (float)width/windowWidth;
 			y = y * (float)height/windowHeight;
 		}
 	}
-	else 
+	else
 	{
 		// cursor is invisible, just say we have it pinned to the middle of the screen
 		CMatRenderContextPtr pRenderContext( g_pMaterialSystem );
@@ -561,5 +565,3 @@ int  GetSoftwareCursorTexture( float *px, float *py )
 	}
 	return s_nSoftwareCursorTexture;
 }
-
-
